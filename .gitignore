@@ -49,3 +49,5 @@ IOS/www/
 .Spotlight-V100
 .Trashes
 
+#android keystore
+release-key.keystore
