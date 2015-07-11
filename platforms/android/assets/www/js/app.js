@@ -197,7 +197,7 @@
         googleapi.authorize({
           client_id: '742441378089-o41dmn9ri0jtj9lqdv55kn8goqgdr67k.apps.googleusercontent.com',
           redirect_uri: 'http://localhost',
-          scope: 'https://www.googleapis.com/auth/calendar https://apps-apis.google.com/a/feeds/calendar/resource/ email'
+          scope: 'https://www.googleapis.com/auth/calendar '+/*'https://apps-apis.google.com/a/feeds/calendar/resource/'+*/'email'
         }).done(function(data) {
           //storing the users email for later use
           var email = '';
