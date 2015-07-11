@@ -228,7 +228,7 @@ th {
   padding: 0;
 }
 
-* {
+*:not(#calendar):not(.ui-timepicker):not(.ui-timepicker-table).not(.ui-timepicker-hour-cell) {
   -webkit-box-sizing: border-box;
      -moz-box-sizing: border-box;
           box-sizing: border-box;
@@ -242,7 +242,7 @@ body {
   left: 0;
   font-family: "Helvetica Neue", Helvetica, sans-serif;
   font-size: 17px;
-  line-height: 21px;
+  /*line-height: 21px;*/
   color: #000;
   background-color: #fff;
 }
