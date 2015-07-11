@@ -17,3 +17,7 @@ body {
 a {
   cursor: pointer;
 }
+
+#calendar {
+  box-sizing: inital !important;
+}

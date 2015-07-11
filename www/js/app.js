@@ -33,12 +33,6 @@
       }
     }, false);
 
-/*document.addEventListener("deviceready", init, false);
-function init() {
-	document.querySelector("#scan").addEventListener("touchend", scan, false);
-	resultDiv = document.querySelector("#results");
-}*/
-
     /* ---------------------------------- Local Functions ---------------------------------- */
     function findByName() {
       service.findByName($('.search-key').val()).done(function (employees) {
@@ -70,7 +64,6 @@ function init() {
             } else {
               //No errors, procide...
               //alert('Yay! It worked! \nValue returned:' + result.text + '\n' + 'Code Type: ' + result.format);
-              newEvent(result.text);
             }
           }
         },
@@ -174,67 +167,252 @@ function init() {
 
     function getGoogleMeStatus(token) {
       alert('yup the funcs workin');
-      var xhr = new XMLHttpRequest();
+      var xhr_events = new XMLHttpRequest();
 
       var url='https://www.googleapis.com/plus/v1/people/me?fields=birthday%2CcurrentLocation%2CdisplayName%2Cemails%2Cgender%2Cid%2Cimage&access_token='+token;
 
-      xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            $('#output p').html(xhr.responseText);
+      xhr_events.onreadystatechange = function () {
+        if (xhr_events.readyState === 4) {
+          if (xhr_events.status === 200) {
+            $('#output p').html(xhr_events.responseText);
           } else {
-            var error = xhr.responseText ? JSON.parse(xhr.responseText).error : {message: 'An error has occurred'};
+            var error = xhr_events.responseText ? JSON.parse(xhr_events.responseText).error : {message: 'An error has occurred'};
             $('#output p').html(error.message);
           }
         }
       };
 
-      xhr.open('GET', url, true);
-      xhr.send();
+      xhr_events.open('GET', url, true);
+      xhr_events.send();
     }*/
 
     $(document).on('deviceready', function() {
-      var $loginButton = $('#login a');
+      var $loginButton = $('#logina');
       var $loginStatus = $('#login p');
+
+      var calendar = '';
+      var url = '';
 
       $loginButton.on('click', function() {
         googleapi.authorize({
           client_id: '742441378089-o41dmn9ri0jtj9lqdv55kn8goqgdr67k.apps.googleusercontent.com',
           redirect_uri: 'http://localhost',
-          scope: 'https://www.googleapis.com/auth/calendar https://apps-apis.google.com/a/feeds/calendar/resource/ email'
+          scope: 'https://www.googleapis.com/auth/calendar '+/*'https://apps-apis.google.com/a/feeds/calendar/resource/'+*/'email'
         }).done(function(data) {
-          //Getting the user's domain
+          //storing the users email for later use
+          var email = '';
 
+          //change the sign in with google thing to a rescanner
+          $('#login a').text('Re-scan QR Code');
+          $('#login a').attr('id', 'rescan');
 
-          //google calendar events
-          var xhr = new XMLHttpRequest();
+          //creating xhrs
+          var xhr_events = new XMLHttpRequest();
+          var xhr_email = new XMLHttpRequest();
+          var xhr_calendar_list = new XMLHttpRequest();
 
-          var url='https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=' + (new Date()).toISOString() +
-            '&singleEvents=true&orderBy=startTime&access_token='+data.access_token;
+          //scan the barcode
+          cordova.plugins.barcodeScanner.scan(
+            function (result) {
+              if (result.cancelled == true) {
+                alert('ERR: Barcode Scanning Canceled');
+              } else {
+                if (result.format != "QR_CODE") {
+                  alert('ERR: You didn\'t scan a QR Code! Nonetheless, it returned this value: ' + result.text);
+                } else {
+                  //No errors, procide...
+                  calendar = result.text;
 
-          xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4) {
-              if (xhr.status === 200) {
-                $('#output p').html('Full XHR GAPI Response:\n' + xhr.responseText);
-                alert('Full XHR GAPI Response: ' + xhr.responseText)
+                  //get the user's email address
+                  xhr_email.onreadystatechange = function () {
+                    if (xhr_email.readyState === 4) {
+                      if (xhr_email.status === 200) {
+                        //$('#output p').html('Full xhr_events GAPI Response:\n' + xhr_events.responseText);
+                        //alert('Full xhr_events GAPI Response: ' + xhr_events.responseText)
 
-                var response = $.parseJSON(xhr.responseText);
+                        var response = $.parseJSON(xhr_email.responseText);
+                        var emails = response;
+
+                        if ($.isEmptyObject(emails['emails']) == false) {
+                          $.each(emails['emails'], function(ind, v) {
+
+                            $.each(v, function(i, val) {
+                              if ('' + i == 'value') {
+                                email = val + '';
+
+                                //getting dates
+                                var date = new Date();
+                                var year = date.getFullYear();
+                                var month = date.getMonth();
+                                month=month+1;
+                                if (month < 10)
+                                 month = "0" + month;
+                                var day= date.getDate();
+                                if (day < 10)
+                                 day = "0" + day;
+                                var datestring=year+month+day;
+
+                                //changing the personal calendar
+                                $('#personal-calendar').html('<iframe src="https://www.google.com/calendar/embed?showTabs=0&amp;showDate=0&amp;showCalendars=0&amp;mode=DAY&amp;dates=' + datestring + '/' + datestring + '&amp;height=600&amp;wkst=1&amp;bgcolor=%23FFFFFF&amp;src=' + encodeURIComponent(val) + '&amp;color=%23711616&amp;ctz=America%2FLos_Angeles" style=" border-width:0 " width="100%" height="100%" frameborder="0" scrolling="no"></iframe>')
+                                //alert($('#personal-calendar').attr('src'));
+                              }
+                            });
+
+                          });
+
+                        }
+
+                      } else {
+                        var error = xhr_email.responseText ? JSON.parse(xhr_email.responseText).error : {message: 'An error has occurred'};
+
+                        if (error.message == "Not Found") {
+                          $('#output p').html('The calendar you scanned wasn\'t found on your account. Perhaps you signed into the wrong account (or maybe you don\'t have permission)?');
+                        } else {
+                          $('#output p').html('An undocumented XHR_email error occured. Message is as follows: ' + error.message);
+                        }
+                      }
+                    }
+
+                    //retrieving a list of the user's calendars -- sending the request
+
+                    //
+                    //TODO put some stuff here
+                    //
+
+                  };
+
+                  xhr_email.open('GET', 'https://www.googleapis.com/plus/v1/people/me?access_token=' + data.access_token, true);
+                  xhr_email.send();
+
+                  //retrieving a list of the user's calendars -- onreadystatechange
+                  /*xhr_calendar_list.onreadystatechange = function () {
+                    if (xhr_calendar_list.readyState === 4) {
+                      if (xhr_calendar_list.status === 200) {
+
+                        var response = $.parseJSON(xhr_calendar_list.responseText);
+                        var calendarlist = response;
+
+                        //TODO: Finish the parsing of the XHR json header
+                        if ($.isEmptyObject(calendarlist['items']) == false) {
+                          $.each(calendarlist['items'], function(ind, v) {
+
+                            $.each(v, function(i, val) {
+
+                              if ('' + i == 'id' && '' + val == email) {
+                                //this is the user's primary calendar. continue...
+
+                              }
+
+                            });
+
+                          });
+
+                        } else {
+                          alert('No calendars for this account were found. :(');
+                        }
+
+                      } else {
+                        var error = xhr_calendar_list.responseText ? JSON.parse(xhr_calendar_list.responseText).error : {message: 'An error has occurred'};
+
+                        if (error.message == "Not Found") {
+                          $('#output p').html('The calendar you scanned wasn\'t found on your account. Perhaps you signed into the wrong account (or maybe you don\'t have permission)?');
+                        } else {
+                          $('#output p').html('An undocumented XHR_calendar_list error occured. Message is as follows: ' + error.message);
+                        }
+                      }
+                    }
+                  }*/
+
+                  url='https://www.googleapis.com/calendar/v3/calendars/' + calendar + '/events?timeMin=' + (new Date()).toISOString() +
+                  '&timeMax=' + (new Date(new Date().getTime() + (86400000 * 1))).toISOString() +
+                  '&singleEvents=true&orderBy=startTime&access_token='+data.access_token;
+
+                  //getting the date
+                  var date = new Date();
+                  var year = date.getFullYear();
+                  var month = date.getMonth();
+                  month=month+1;
+                  if (month < 10)
+                   month = "0" + month;
+                  var day= date.getDate();
+                  if (day < 10)
+                   day = "0" + day;
+                  var datestring=year+month+day;
+
+                  //displaying the calendar
+                  $('#veeva-calendar').html('<iframe src="https://www.google.com/calendar/embed?showTabs=0&amp;showDate=0&amp;showCalendars=0&amp;mode=DAY&amp;dates=' + datestring + '/' + datestring + '&amp;height=600&amp;wkst=1&amp;bgcolor=%23FFFFFF&amp;src=' + encodeURIComponent(calendar) + '&amp;color=%23711616&amp;ctz=America%2FLos_Angeles" style=" border-width:0 " width="100%" height="100%" frameborder="0" scrolling="no"></iframe>');
+
+                  xhr_events.open('GET', url, true);
+                  xhr_events.send();
+                }
+              }
+            },
+            function (error) {
+              alert("Scanning failed: " + error);
+            }
+          );
+
+          //check for Re-scan
+          /*$('#rescan').click(function() {
+            cordova.plugins.barcodeScanner.scan(
+              function (result) {
+                if (result.cancelled == true) {
+                  alert('ERR: Barcode Scanning Canceled');
+                } else {
+                  if (result.format != "QR_CODE") {
+                    alert('ERR: You didn\'t scan a QR Code! Nonetheless, it returned this value: ' + result.text);
+                  } else {
+                    //No errors, procide...
+                    calendar = result.text;
+
+                    url='https://www.googleapis.com/calendar/v3/calendars/' + calendar + '/events?timeMin=' + (new Date()).toISOString() +
+                    '&timeMax=' + (new Date(new Date().getTime() + (86400000 * 1))).toISOString() +
+                    '&singleEvents=true&orderBy=startTime&access_token='+data.access_token;
+
+                    $('#veeva-calendar').attr('src', 'https://www.google.com/calendar/embed?showTabs=0&amp;showCalendars=0&amp;mode=DAY&amp;height=600&amp;wkst=1&amp;bgcolor=%23FFFFFF&amp;src=' + calendar + '&amp;color=%23711616&amp;ctz=America%2FLos_Angeles')
+
+                    xhr_events.open('GET', url, true);
+                    xhr_events.send();
+                  }
+                }
+              },
+              function (error) {
+                alert("Scanning failed: " + error);
+              }
+            );
+          });*/
+
+          //here comes the fun part... the rest api.
+          xhr_events.onreadystatechange = function () {
+            if (xhr_events.readyState === 4) {
+              if (xhr_events.status === 200) {
+                //$('#output p').html('Full xhr_events GAPI Response:\n' + xhr_events.responseText);
+                //alert('Full xhr_events GAPI Response: ' + xhr_events.responseText)
+
+                var response = $.parseJSON(xhr_events.responseText);
                 var events = response;
-                if ($.isEmptyObject(events) == false) {
+
+
+                if ($.isEmptyObject(events['items']) == false) {
+
+                  $('#calendar').attr('style', 'box-sizing: inital !important;');
 
                   $.each(events['items'], function(i, val) {
-  
-                    $.each(val, function(ind, value) {
 
+                    /*$.each(val, function(ind, value) {
                       if ('' + ind == 'summary') {
-                        alert('Event name: ' + value);
+                        eventdesc['name'] = value;
+                        alert('name')
+                        $('#output p').prepend('Event name: ' + value + '<br>');
                       } else if ('' + ind == 'description') {
-                        alert('Event Description: ' + value);
-                      } else {
-                        //continue
+                        eventdesc['description'] = value;
+                        alert('desc')
+                        $('#output p').append('Event description: ' + value + '<br>');
+                      } else if ('' + ind == 'id'){
+                        alert('ID: ' + value);
+                        $('#output p').append('Event ID: ' + value + '<br>');
                       }
-
-                    });
+                    });*/
                   });
 
                 } else {
@@ -242,31 +420,20 @@ function init() {
                 }
 
               } else {
-                var error = xhr.responseText ? JSON.parse(xhr.responseText).error : {message: 'An error has occurred'};
-                $('#output p').html(error.message);
+                var error = xhr_events.responseText ? JSON.parse(xhr_events.responseText).error : {message: 'An error has occurred'};
+
+                if (error.message == "Not Found") {
+                  $('#output p').html('The calendar you scanned wasn\'t found on your account. Perhaps you signed into the wrong account (or maybe you don\'t have permission)?');
+                } else {
+                  $('#output p').html('Undocumented XHR_events Error: ' + error.message);
+                }
               }
             }
           };
-
-          xhr.open('GET', url, true);
-          xhr.send();
 
         }).fail(function(data) {
           $loginStatus.html(data.error);
         });
       });
     });
-
-    /**
-    * Append a pre element to the body containing the given message
-    * as its text node.
-    *
-    * @param {string} message Text to be placed in pre element.
-    */
-    function appendPre(message) {
-      /*var pre = document.getElementById('output');
-      var textContent = document.createTextNode(message + '\n');
-      pre.appendChild(textContent);*/
-      $('#output p').append(message + '\n');
-    }
 }());
