@@ -1,5 +1,21 @@
 // We use an "Immediate Function" to initialize the application to avoid leaving anything behind in the global scope
 (function () {
+  /*async.waterfall([
+    function() {
+        alert('Run1')
+    },
+    function two() {
+      // arg1 now equals 'one' and arg2 now equals 'two'
+        alert('Run2')
+    },
+    function three() {
+        // arg1 now equals 'three'
+        alert('Run3')
+    }
+  ], function (err, result) {
+    alert(result);
+  });*/
+
     /* ---------------------------------- Local Variables ---------------------------------- */
     var homeTpl = Handlebars.compile($("#home-tpl").html());
     var employeeListTpl = Handlebars.compile($("#employee-list-tpl").html());
@@ -10,14 +26,9 @@
     });
 
     /* --------------------------------- Event Registration -------------------------------- */
-    //$('.search-key').on('keyup', findByName);
-    /*$('.help-btn').on('click', function() {
-        alert("Employee Directory v3.4");
-    });*/
-
     document.addEventListener('deviceready', function () {
 
-      //Define some default stuff
+      //Define some defaults
       StatusBar.overlaysWebView( false );
       StatusBar.backgroundColorByHexString('#ffffff');
       StatusBar.styleDefault();
@@ -43,6 +54,23 @@
     function renderHomeView() {
       $('body').html(homeTpl());
       $('.search-key').on('keyup', findByName);
+    }
+
+    function parseDate(d) {
+      var googleDate = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})\.(\d{3})([+-]\d{2}):(\d{2})$/;
+      var m = googleDate.exec(d);
+      var year   = +m[1];
+      var month  = +m[2];
+      var day    = +m[3];
+      var hour   = +m[4];
+      var minute = +m[5];
+      var second = +m[6];
+      var msec   = +m[7];
+      var tzHour = +m[8];
+      var tzMin  = +m[9];
+      var tzOffset = new Date().getTimezoneOffset() + tzHour * 60 + tzMin;
+
+      return new Date(year, month - 1, day, hour, minute - tzOffset, second, msec);
     }
 
     /* ---------------------------------- Google Calendar --------------------------------- */
@@ -253,7 +281,7 @@
                                 var datestring=year+month+day;
 
                                 //changing the personal calendar
-                                $('#personal-calendar').html('<iframe src="https://www.google.com/calendar/embed?showTabs=0&amp;showDate=0&amp;showCalendars=0&amp;mode=DAY&amp;dates=' + datestring + '/' + datestring + '&amp;height=600&amp;wkst=1&amp;bgcolor=%23FFFFFF&amp;src=' + encodeURIComponent(val) + '&amp;color=%23711616&amp;ctz=America%2FLos_Angeles" style=" border-width:0 " width="100%" height="100%" frameborder="0" scrolling="no"></iframe>')
+
                                 //alert($('#personal-calendar').attr('src'));
                               }
                             });
@@ -340,7 +368,6 @@
                   var datestring=year+month+day;
 
                   //displaying the calendar
-                  $('#veeva-calendar').html('<iframe src="https://www.google.com/calendar/embed?showTabs=0&amp;showDate=0&amp;showCalendars=0&amp;mode=DAY&amp;dates=' + datestring + '/' + datestring + '&amp;height=600&amp;wkst=1&amp;bgcolor=%23FFFFFF&amp;src=' + encodeURIComponent(calendar) + '&amp;color=%23711616&amp;ctz=America%2FLos_Angeles" style=" border-width:0 " width="100%" height="100%" frameborder="0" scrolling="no"></iframe>');
 
                   xhr_events.open('GET', url, true);
                   xhr_events.send();
@@ -395,12 +422,10 @@
 
                 if ($.isEmptyObject(events['items']) == false) {
 
-                  $('#calendar').attr('style', 'box-sizing: inital !important;');
+                  $.each(events['items'], function(i, v) {
 
-                  $.each(events['items'], function(i, val) {
-
-                    /*$.each(val, function(ind, value) {
-                      if ('' + ind == 'summary') {
+                    $.each(v, function(ind, val) {
+                      /*if ('' + ind == 'summary') {
                         eventdesc['name'] = value;
                         alert('name')
                         $('#output p').prepend('Event name: ' + value + '<br>');
@@ -411,8 +436,41 @@
                       } else if ('' + ind == 'id'){
                         alert('ID: ' + value);
                         $('#output p').append('Event ID: ' + value + '<br>');
+                      }*/
+
+                      var startendtime = {start: '', end: ''};
+
+                      if ('' + ind == 'start') {
+                        $.each(val, function(index, value) {
+                          if ('' + index == 'dateTime') {
+                            //TODO This is the start time of the event
+
+                            var starttime = new Date(value);
+                            alert('Start time: ' + starttime.getHours() + ':' + starttime.getMinutes());
+                            startendtime.start = starttime.getHours() + ':' + starttime.getMinutes();
+                            alert('Start time: ' + startendtime.start);
+                            alert('End time: ' + startendtime.end);
+                          }
+                        });
+                      } else if ('' + ind == 'end') {
+                        $.each(val, function(index, value) {
+                          if ('' + index == 'dateTime') {
+                            //This is the end time of the event
+
+                            var endtime = new Date(value);
+                            /*alert(endtime.getHours());
+                            alert(endtime.getMinutes());
+                            alert(endtime.getHours() + ':' + endtime.getMinutes());*/
+                            startendtime.end = endtime.getHours() + ':' + endtime.getMinutes();
+                            alert('End time: ' + endtime.getHours() + ':' + endtime.getMinutes())
+                            alert(startendtime);
+                          }
+                        });
+                      } else if ('' + ind == 'summary') {
+                        //alert('Event name:' + val);
                       }
-                    });*/
+                    });
+
                   });
 
                 } else {
