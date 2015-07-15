@@ -438,32 +438,57 @@
                         $('#output p').append('Event ID: ' + value + '<br>');
                       }*/
 
-                      var startendtime = {start: '', end: ''};
+                      var startendtime = {};
+
+                      /* check_startend = setInterval(function() {
+                        //alert(Object.getOwnPropertyNames(startendtime).length);
+                        if (Object.getOwnPropertyNames(startendtime).length > 0) {
+                            clearInterval(check_startend);
+                            alert('Start time: ' + startendtime.start);
+                            alert('End time: ' + startendtime.end);
+                        }
+                      }, 1000);*/
+
+                      var dstart = $.Deferred();
+                      var dend = $.Deferred();
+
+                      $.when(dstart, dend).done(function (start, end) {
+                        alert('Start time: ' + start + ', end time: ' + end);
+                      });
+
+                      /*function starttime(stime) {
+                        d.promise();
+                        d.resolve(stime);
+                      }
+
+                      function endtime(etime) {
+                        d.promise();
+                        d.resolve(etime);
+                      }*/
 
                       if ('' + ind == 'start') {
                         $.each(val, function(index, value) {
                           if ('' + index == 'dateTime') {
-                            //TODO This is the start time of the event
-
-                            var starttime = new Date(value);
-                            alert('Start time: ' + starttime.getHours() + ':' + starttime.getMinutes());
-                            startendtime.start = starttime.getHours() + ':' + starttime.getMinutes();
-                            alert('Start time: ' + startendtime.start);
-                            alert('End time: ' + startendtime.end);
+                            //This is the start time of the event
+                            var stime = new Date(value);
+                            //alert('Start time: ' + starttime.getHours() + ':' + starttime.getMinutes());
+                            alert(stime.getHours() + ':' + stime.getMinutes());
+                            dstart.resolve(stime.getHours() + ':' + stime.getMinutes());
                           }
+
                         });
                       } else if ('' + ind == 'end') {
                         $.each(val, function(index, value) {
                           if ('' + index == 'dateTime') {
                             //This is the end time of the event
 
-                            var endtime = new Date(value);
+                            var etime = new Date(value);
                             /*alert(endtime.getHours());
                             alert(endtime.getMinutes());
                             alert(endtime.getHours() + ':' + endtime.getMinutes());*/
-                            startendtime.end = endtime.getHours() + ':' + endtime.getMinutes();
-                            alert('End time: ' + endtime.getHours() + ':' + endtime.getMinutes())
-                            alert(startendtime);
+                            alert(etime.getHours() + ':' + etime.getMinutes());
+                            dend.resolve(etime.getHours() + ':' + etime.getMinutes());
+                            //alert('End time: ' + endtime.getHours() + ':' + endtime.getMinutes())
                           }
                         });
                       } else if ('' + ind == 'summary') {
