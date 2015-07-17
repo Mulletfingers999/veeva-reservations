@@ -1,20 +1,5 @@
 // We use an "Immediate Function" to initialize the application to avoid leaving anything behind in the global scope
 (function () {
-  /*async.waterfall([
-    function() {
-        alert('Run1')
-    },
-    function two() {
-      // arg1 now equals 'one' and arg2 now equals 'two'
-        alert('Run2')
-    },
-    function three() {
-        // arg1 now equals 'three'
-        alert('Run3')
-    }
-  ], function (err, result) {
-    alert(result);
-  });*/
 
     /* ---------------------------------- Local Variables ---------------------------------- */
     var homeTpl = Handlebars.compile($("#home-tpl").html());
@@ -236,6 +221,7 @@
 
           //creating xhrs
           var xhr_events = new XMLHttpRequest();
+          var xhr_personal_events = new XMLHttpRequest();
           var xhr_email = new XMLHttpRequest();
           var xhr_calendar_list = new XMLHttpRequest();
 
@@ -263,7 +249,6 @@
 
                         if ($.isEmptyObject(emails['emails']) == false) {
                           $.each(emails['emails'], function(ind, v) {
-
                             $.each(v, function(i, val) {
                               if ('' + i == 'value') {
                                 email = val + '';
@@ -350,10 +335,13 @@
                       }
                     }
                   }*/
+                  var g = new Date();
+                  g.setHours(0,0,0,0);
+                  var f = new Date(new Date().getTime() + (86400000 * 1));
+                  f.setHours(0,0,0,0);
 
-                  url='https://www.googleapis.com/calendar/v3/calendars/' + calendar + '/events?timeMin=' + (new Date()).toISOString() +
-                  '&timeMax=' + (new Date(new Date().getTime() + (86400000 * 1))).toISOString() +
-                  '&singleEvents=true&orderBy=startTime&access_token='+data.access_token;
+                  url='https://www.googleapis.com/calendar/v3/calendars/' + calendar + '/events?timeMin=' + g.toISOString() +
+                  '&timeMax=' + f.toISOString() + '&singleEvents=true&orderBy=startTime&access_token='+data.access_token;
 
                   //getting the date
                   var date = new Date();
@@ -424,7 +412,39 @@
 
                   $.each(events['items'], function(i, v) {
 
-                    $.each(v, function(ind, val) {
+                    var startend_time = {};
+
+                    function time(dtime) {
+                      var datetime = new Date(dtime);
+                      return (datetime.getHours() % 12 || 12) + ':' + ((datetime.getMinutes() == 0) ? '00' : datetime.getMinutes());
+                    };
+
+                    startend_time[v.summary] = {'start': time(v.start.dateTime), 'end': time(v.end.dateTime)};
+
+                    if (calendar != 'primary') {
+                      //This is a veeva calendar
+                      $('#' + (startend_time[v.summary].start).replace(':','') + '_veeva').text(v.summary).attr('style', 'background:red;');
+                      $('#' + (startend_time[v.summary].end).replace(':','') + '_veeva').attr('style', 'background:red;');
+                      for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
+                          console.log(i);
+
+                          //TODO floor(i_minutes/15) == 1 || 2 || 3
+
+                          if (i%15==0) {
+                            $('#' + i + '_veeva').attr('style', 'background:red;');
+                            console.log('#' + i + '_veeva');
+                          }
+                      }
+                    } else {
+                      // Only show the user's primary calendar
+                      // This will be used for debugging and occasional demos
+                      $('#' + (startend_time[v.summary].start).replace(':','') + '_personal').text(v.summary).attr('style', 'background:red;');
+
+                    }
+
+                    //alert('You have ' + v.summary + ' at ' + startend_time[v.summary].start + '. It ends at ' + startend_time[v.summary].end);
+
+                    /*$.each(v, function(ind, val) {
                       /*if ('' + ind == 'summary') {
                         eventdesc['name'] = value;
                         alert('name')
@@ -436,7 +456,7 @@
                       } else if ('' + ind == 'id'){
                         alert('ID: ' + value);
                         $('#output p').append('Event ID: ' + value + '<br>');
-                      }*/
+                      }
 
                       var startendtime = {};
 
@@ -447,32 +467,32 @@
                             alert('Start time: ' + startendtime.start);
                             alert('End time: ' + startendtime.end);
                         }
-                      }, 1000);*/
+                      }, 1000);
 
                       var dstart = $.Deferred();
                       var dend = $.Deferred();
 
-                      $.when(dstart, dend).done(function (start, end) {
-                        alert('Start time: ' + start + ', end time: ' + end);
+                      dstart.done( function ( n ) {
+                        console.log('dstart resolved with this value: ' + n);
                       });
 
-                      /*function starttime(stime) {
-                        d.promise();
-                        d.resolve(stime);
-                      }
+                      dend.done( function ( n ) {
+                        console.log('dend resolved with this value: ' + n);
+                      });
 
-                      function endtime(etime) {
-                        d.promise();
-                        d.resolve(etime);
-                      }*/
+                      $.when(dstart, dend).done(function (start, end) {
+                          //alert('$.when fired');
+                          console.log('Start time: ' + start + ', end time: ' + end);
+                      });
 
                       if ('' + ind == 'start') {
                         $.each(val, function(index, value) {
                           if ('' + index == 'dateTime') {
                             //This is the start time of the event
+
                             var stime = new Date(value);
                             //alert('Start time: ' + starttime.getHours() + ':' + starttime.getMinutes());
-                            alert(stime.getHours() + ':' + stime.getMinutes());
+                            //alert(stime.getHours() + ':' + stime.getMinutes());
                             dstart.resolve(stime.getHours() + ':' + stime.getMinutes());
                           }
 
@@ -485,16 +505,84 @@
                             var etime = new Date(value);
                             /*alert(endtime.getHours());
                             alert(endtime.getMinutes());
-                            alert(endtime.getHours() + ':' + endtime.getMinutes());*/
-                            alert(etime.getHours() + ':' + etime.getMinutes());
+                            alert(endtime.getHours() + ':' + endtime.getMinutes());
+                            //alert(etime.getHours() + ':' + etime.getMinutes());
                             dend.resolve(etime.getHours() + ':' + etime.getMinutes());
-                            //alert('End time: ' + endtime.getHours() + ':' + endtime.getMinutes())
                           }
                         });
                       } else if ('' + ind == 'summary') {
                         //alert('Event name:' + val);
                       }
-                    });
+                    });*/
+
+                  });
+
+                } else {
+                  alert('No upcoming events found :(');
+                }
+
+              } else {
+                var error = xhr_events.responseText ? JSON.parse(xhr_events.responseText).error : {message: 'An error has occurred'};
+
+                if (error.message == "Not Found") {
+                  $('#output p').html('The calendar you scanned wasn\'t found on your account. Perhaps you signed into the wrong account (or maybe you don\'t have permission)?');
+                } else {
+                  $('#output p').html('Undocumented XHR_events Error: ' + error.message);
+                }
+              }
+            }
+          };
+
+          var g = new Date();
+          g.setHours(0,0,0,0);
+          var f = new Date(new Date().getTime() + (86400000 * 1));
+          f.setHours(0,0,0,0);
+
+
+          // user's primary calendar events
+          url='https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=' + g.toISOString() +
+          '&timeMax=' + f.toISOString() + '&singleEvents=true&orderBy=startTime&access_token='+data.access_token;
+
+          //sending request
+          xhr_personal_events.open('GET', url, true);
+          xhr_personal_events.send();
+
+          xhr_personal_events.onreadystatechange = function () {
+            if (xhr_personal_events.readyState === 4) {
+              if (xhr_personal_events.status === 200) {
+
+                var response = $.parseJSON(xhr_personal_events.responseText);
+                var events = response;
+
+
+                if ($.isEmptyObject(events['items']) == false) {
+
+                  $.each(events['items'], function(i, v) {
+
+                    var startend_time = {};
+
+                    function time(dtime) {
+                      var datetime = new Date(dtime);
+                      return (datetime.getHours() % 12 || 12) + ':' + ((datetime.getMinutes() == 0) ? '00' : datetime.getMinutes());
+                    };
+
+                    startend_time[v.summary] = {'start': time(v.start.dateTime), 'end': time(v.end.dateTime)};
+
+                    if (calendar != 'primary') {
+                      // Displaying the user's primary calendar next to the veeva calendar
+                      $('#' + (startend_time[v.summary].start).replace(':','') + '_personal').text(v.summary).attr('style', 'background:red;');
+                      $('#' + (startend_time[v.summary].end).replace(':','') + '_personal').attr('style', 'background:red;');
+
+                      for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
+
+                          //TODO floor(i_minutes/15) == 1 || 2 || 3
+
+                          if (i%15==0) {
+                            $('#' + i + '_personal').attr('style', 'background:red;');
+                          }
+                      }
+
+                    }
 
                   });
 
