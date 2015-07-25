@@ -236,6 +236,7 @@
                 } else {
                   //No errors, procide...
                   calendar = result.text;
+                  console.log('Scanned text: ' + calendar);
 
                   //get the user's email address
                   xhr_email.onreadystatechange = function () {
@@ -425,16 +426,28 @@
                       //This is a veeva calendar
                       $('#' + (startend_time[v.summary].start).replace(':','') + '_veeva').text(v.summary).attr('style', 'background:red;');
                       $('#' + (startend_time[v.summary].end).replace(':','') + '_veeva').attr('style', 'background:red;');
+
                       for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
-                          console.log(i);
+                        var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
+                        console.log('Time: ' + i + ', minutes: ' + i_minutes);
 
-                          //TODO floor(i_minutes/15) == 1 || 2 || 3
-
-                          if (i%15==0) {
-                            $('#' + i + '_veeva').attr('style', 'background:red;');
-                            console.log('#' + i + '_veeva');
-                          }
+                        if (/*i%15==0*/Math.floor(i_minutes/15) == 1 || 2 || 3) {
+                          console.log('true');
+                          $('#' + i + '_veeva').attr('style', 'background:red;');
+                          console.log('#' + i + '_veeva');
+                        }
                       }
+
+                      // for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
+                      //   var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
+                      //   console.log('Time: ' + i + ', minutes: ' + i_minutes);
+                      //
+                      //   if (/*i%15==0*/Math.floor(i_minutes/15) == 1 || 2 || 3) {
+                      //     console.log('true');
+                      //     $('#' + i + '_veeva').attr('style', 'background:red;');
+                      //     console.log('#' + i + '_veeva');
+                      //   }
+                      // }
                     } else {
                       // Only show the user's primary calendar
                       // This will be used for debugging and occasional demos
@@ -575,11 +588,16 @@
 
                       for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
 
-                          //TODO floor(i_minutes/15) == 1 || 2 || 3
+                        for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
+                          var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
+                          console.log('Time: ' + i + ', minutes: ' + i_minutes);
 
-                          if (i%15==0) {
+                          if (/*i%15==0*/Math.floor(i_minutes/15) == 1 || 2 || 3) {
+                            console.log('true');
                             $('#' + i + '_personal').attr('style', 'background:red;');
+                            console.log('#' + i + '_personal');
                           }
+                        }
                       }
 
                     }
