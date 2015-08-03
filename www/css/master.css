@@ -31,3 +31,7 @@ a {
 table {
   border: 1px solid black;
 }
+
+.cell:active {
+  background-color: lightgray;
+}

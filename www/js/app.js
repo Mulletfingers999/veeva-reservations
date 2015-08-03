@@ -1,5 +1,6 @@
 // We use an "Immediate Function" to initialize the application to avoid leaving anything behind in the global scope
 (function () {
+    var calendar = '';
 
     /* ---------------------------------- Local Variables ---------------------------------- */
     var homeTpl = Handlebars.compile($("#home-tpl").html());
@@ -203,7 +204,6 @@
       var $loginButton = $('#logina');
       var $loginStatus = $('#login p');
 
-      var calendar = '';
       var url = '';
 
       $loginButton.on('click', function() {
@@ -625,4 +625,8 @@
         });
       });
     });
+
+    function book(t) {
+      alert(t);
+    }
 }());
