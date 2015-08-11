@@ -1,4 +1,5 @@
 // We use an "Immediate Function" to initialize the application to avoid leaving anything behind in the global scope
+var a_token;
 (function () {
     var calendar = '';
 
@@ -24,9 +25,28 @@
             message,    // message
             null,       // callback
             "Message from app", // title
-            'OK'        // buttonName
+            "OK"        // buttonName
           );
         };
+
+        window.prompt = function (msg, def) {
+          navigator.notification.prompt(
+            msg,
+            null,
+            "Enter data",
+            ['OK', ''],
+            def
+          );
+        };
+
+        window.confirm = function (msg) {
+          navigator.notification.confirm(
+            msg,
+            null,
+            "Confirm action",
+            ['OK', 'Cancel']
+          )
+        }
       }
     }, false);
 
@@ -212,6 +232,147 @@
           redirect_uri: 'http://localhost',
           scope: 'https://www.googleapis.com/auth/calendar '+/*'https://apps-apis.google.com/a/feeds/calendar/resource/'+*/'email'
         }).done(function(data) {
+          //set token
+          a_token = data.access_token;
+
+          //room booking function
+          window.book_room = function(t, tstring) {
+            if (("" + $('#' + t + '_veeva').attr('style')).indexOf("red") == -1) {
+              $('#event_form_dialog').dialog({
+                draggable: true
+              });
+
+              $('#event_form').submit(function (e) {
+                e.preventDefault();
+                var name = $('#event_form_name').val();//prompt("What would you like to name your meeting?", "In prompt to: ");
+                var minutes = $('#event_form_minutes').val();//prompt("How many minutes would you like " + ((name == undefined) ? 'your meeting' : name) + " to last?", "60");
+                var meridian = "";
+
+                if (t >= 800 && t <= 1245) {
+                  meridian = "AM";
+                } else if (t >= 100 && t <= 600) {
+                  meridian = "PM";
+                }
+
+                var stime = new Date(new Date().toDateString() + " " + tstring + " " + meridian);
+
+                var event = {
+                  "summary": name,
+                  "start": {
+                    "dateTime": stime.toISOString()
+                  },
+                  "end": {
+                    "dateTime": new Date(stime.getTime() + ((parseInt(minutes))*60000)).toISOString()
+                  },
+                  "attendees": [
+                    {
+                      //inviting the owner to their event
+                      "email": email
+                    }
+                  ]
+                }
+
+                $.ajax({
+                  contentType: 'application/json',
+                  data: JSON.stringify(event),
+                  dataType: 'json',
+                  success: function(data){
+                      alert('Event Created!');
+
+                      //now refresh the veeva calendar to show the event
+                      //TODO also refresh the user's calendar
+
+                      var g = new Date();
+                      g.setHours(0,0,0,0);
+                      var f = new Date(new Date().getTime() + (86400000 * 1));
+                      f.setHours(0,0,0,0);
+
+                      $.getJSON('https://www.googleapis.com/calendar/v3/calendars/'+calendar+'/events?timeMin='+g.toISOString()+'&timeMax='+f.toISOString()+'&singleEvents=true&orderBy=startTime&access_token='+a_token, function(events) {
+                        if ($.isEmptyObject(events['items']) == false) {
+
+                          $.each(events['items'], function(i, v) {
+
+                            var startend_time = {};
+
+                            function time(dtime) {
+                              var datetime = new Date(dtime);
+                              return (datetime.getHours() % 12 || 12) + ':' + ((datetime.getMinutes() == 0) ? '00' : datetime.getMinutes());
+                            };
+
+                            startend_time[v.summary] = {'start': time(v.start.dateTime), 'end': time(v.end.dateTime)};
+                            if (calendar != 'primary') {
+                              //This is a veeva calendar
+                              $('#' + (startend_time[v.summary].start).replace(':','') + '_veeva').text(v.summary).attr('style', 'background:red;border-top:1px solid black;');
+                              $('#' + (startend_time[v.summary].end).replace(':','') + '_veeva').attr('style', 'background:red;border-bottom:1px solid black;');
+
+                              if (parseInt((startend_time[v.summary].start).replace(':','')) <= 1245 &&
+                                  parseInt((startend_time[v.summary].end).replace(':','')) <= 600 &&
+                                  parseInt((startend_time[v.summary].start).replace(':','')) >= 800) {
+
+                                //the time crosses over the AM-PM mark
+                                for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= 1245; i++) {
+                                    var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
+                                    //console.log('Time: ' + i + ', minutes: ' + i_minutes);
+
+                                    if (Math.floor(i_minutes/15) == 1 || 2 || 3) {
+                                      //console.log('true');
+                                      $('#' + i + '_veeva').attr('style', 'background:red;');
+                                      //console.log('#' + i + '_veeva');
+                                    }
+                                }
+
+                                for (var i = 100; i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
+                                    var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
+                                    //console.log('Time: ' + i + ', minutes: ' + i_minutes);
+
+                                    if (Math.floor(i_minutes/15) == 1 || 2 || 3) {
+                                      //console.log('true');
+                                      $('#' + i + '_veeva').attr('style', 'background:red;');
+                                      //console.log('#' + i + '_veeva');
+                                    }
+                                }
+                              } else {
+                                //the time does not cross over the AM-PM mark
+                                for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
+                                    var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
+                                    //console.log('Time: ' + i + ', minutes: ' + i_minutes);
+
+                                    if (Math.floor(i_minutes/15) == 1 || 2 || 3) {
+                                      //console.log('true');
+                                      $('#' + i + '_veeva').attr('style', 'background:red;');
+                                      //console.log('#' + i + '_veeva');
+                                    }
+                                }
+                              }
+                            } else {
+                              // Only show the user's primary calendar
+                              // This will be used for debugging and occasional demos
+                              $('#' + (startend_time[v.summary].start).replace(':','') + '_personal').text(v.summary).attr('style', 'background:red;');
+
+                            }
+
+                          });
+                        } else {
+                          alert('No upcoming events found :(');
+                        }
+                      });
+
+                  },
+                  error: function(err){
+                      alert("Request failed. Details can be found in console. Terminating XHR...");
+                      console.log(err);
+                  },
+                  processData: false,
+                  type: 'POST',
+                  url: 'https://www.googleapis.com/calendar/v3/calendars/' + calendar + '/events?access_token=' + data.access_token
+                });
+
+                $('#event_form_dialog').dialog('close');
+              });
+            } else {
+              alert('A room is already booked in that slot!');
+            }
+          };
           //storing the users email for later use
           var email = '';
 
@@ -421,33 +582,53 @@
                     };
 
                     startend_time[v.summary] = {'start': time(v.start.dateTime), 'end': time(v.end.dateTime)};
-
                     if (calendar != 'primary') {
                       //This is a veeva calendar
-                      $('#' + (startend_time[v.summary].start).replace(':','') + '_veeva').text(v.summary).attr('style', 'background:red;');
-                      $('#' + (startend_time[v.summary].end).replace(':','') + '_veeva').attr('style', 'background:red;');
+                      $('#' + (startend_time[v.summary].start).replace(':','') + '_veeva').text(v.summary).attr('style', 'background:red;border-top:1px solid black;');
+                      $('#' + (startend_time[v.summary].end).replace(':','') + '_veeva').attr('style', 'background:red;border-bottom:1px solid black;');
 
-                      for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
-                        var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
-                        console.log('Time: ' + i + ', minutes: ' + i_minutes);
+                      alert('Start: ' + parseInt((startend_time[v.summary].start).replace(':','')));
+                      alert('End: ' + parseInt((startend_time[v.summary].end).replace(':','')));
 
-                        if (/*i%15==0*/Math.floor(i_minutes/15) == 1 || 2 || 3) {
-                          console.log('true');
-                          $('#' + i + '_veeva').attr('style', 'background:red;');
-                          console.log('#' + i + '_veeva');
+                      if (parseInt((startend_time[v.summary].start).replace(':','')) <= 1245 &&
+                          parseInt((startend_time[v.summary].start).replace(':','')) >= 800 &&
+                          parseInt((startend_time[v.summary].end).replace(':','')) <= 600) {
+
+                        //the time crosses over the AM-PM mark
+                        for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= 1245; i++) {
+                            var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
+                            //console.log('Time: ' + i + ', minutes: ' + i_minutes);
+
+                            if (Math.floor(i_minutes/15) == 1 || 2 || 3) {
+                              //console.log('true');
+                              $('#' + i + '_veeva').attr('style', 'background:red;');
+                              //console.log('#' + i + '_veeva');
+                            }
+                        }
+
+                        for (var i = 100; i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
+                            var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
+                            //console.log('Time: ' + i + ', minutes: ' + i_minutes);
+
+                            if (Math.floor(i_minutes/15) == 1 || 2 || 3) {
+                              //console.log('true');
+                              $('#' + i + '_veeva').attr('style', 'background:red;');
+                              //console.log('#' + i + '_veeva');
+                            }
+                        }
+                      } else {
+                        //the time does not cross over the AM-PM mark
+                        for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
+                            var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
+                            //console.log('Time: ' + i + ', minutes: ' + i_minutes);
+
+                            if (Math.floor(i_minutes/15) == 1 || 2 || 3) {
+                              //console.log('true');
+                              $('#' + i + '_veeva').attr('style', 'background:red;');
+                              //console.log('#' + i + '_veeva');
+                            }
                         }
                       }
-
-                      // for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
-                      //   var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
-                      //   console.log('Time: ' + i + ', minutes: ' + i_minutes);
-                      //
-                      //   if (/*i%15==0*/Math.floor(i_minutes/15) == 1 || 2 || 3) {
-                      //     console.log('true');
-                      //     $('#' + i + '_veeva').attr('style', 'background:red;');
-                      //     console.log('#' + i + '_veeva');
-                      //   }
-                      // }
                     } else {
                       // Only show the user's primary calendar
                       // This will be used for debugging and occasional demos
@@ -455,81 +636,7 @@
 
                     }
 
-                    //alert('You have ' + v.summary + ' at ' + startend_time[v.summary].start + '. It ends at ' + startend_time[v.summary].end);
-
-                    /*$.each(v, function(ind, val) {
-                      /*if ('' + ind == 'summary') {
-                        eventdesc['name'] = value;
-                        alert('name')
-                        $('#output p').prepend('Event name: ' + value + '<br>');
-                      } else if ('' + ind == 'description') {
-                        eventdesc['description'] = value;
-                        alert('desc')
-                        $('#output p').append('Event description: ' + value + '<br>');
-                      } else if ('' + ind == 'id'){
-                        alert('ID: ' + value);
-                        $('#output p').append('Event ID: ' + value + '<br>');
-                      }
-
-                      var startendtime = {};
-
-                      /* check_startend = setInterval(function() {
-                        //alert(Object.getOwnPropertyNames(startendtime).length);
-                        if (Object.getOwnPropertyNames(startendtime).length > 0) {
-                            clearInterval(check_startend);
-                            alert('Start time: ' + startendtime.start);
-                            alert('End time: ' + startendtime.end);
-                        }
-                      }, 1000);
-
-                      var dstart = $.Deferred();
-                      var dend = $.Deferred();
-
-                      dstart.done( function ( n ) {
-                        console.log('dstart resolved with this value: ' + n);
-                      });
-
-                      dend.done( function ( n ) {
-                        console.log('dend resolved with this value: ' + n);
-                      });
-
-                      $.when(dstart, dend).done(function (start, end) {
-                          //alert('$.when fired');
-                          console.log('Start time: ' + start + ', end time: ' + end);
-                      });
-
-                      if ('' + ind == 'start') {
-                        $.each(val, function(index, value) {
-                          if ('' + index == 'dateTime') {
-                            //This is the start time of the event
-
-                            var stime = new Date(value);
-                            //alert('Start time: ' + starttime.getHours() + ':' + starttime.getMinutes());
-                            //alert(stime.getHours() + ':' + stime.getMinutes());
-                            dstart.resolve(stime.getHours() + ':' + stime.getMinutes());
-                          }
-
-                        });
-                      } else if ('' + ind == 'end') {
-                        $.each(val, function(index, value) {
-                          if ('' + index == 'dateTime') {
-                            //This is the end time of the event
-
-                            var etime = new Date(value);
-                            /*alert(endtime.getHours());
-                            alert(endtime.getMinutes());
-                            alert(endtime.getHours() + ':' + endtime.getMinutes());
-                            //alert(etime.getHours() + ':' + etime.getMinutes());
-                            dend.resolve(etime.getHours() + ':' + etime.getMinutes());
-                          }
-                        });
-                      } else if ('' + ind == 'summary') {
-                        //alert('Event name:' + val);
-                      }
-                    });*/
-
                   });
-
                 } else {
                   alert('No upcoming events found :(');
                 }
@@ -583,23 +690,48 @@
 
                     if (calendar != 'primary') {
                       // Displaying the user's primary calendar next to the veeva calendar
-                      $('#' + (startend_time[v.summary].start).replace(':','') + '_personal').text(v.summary).attr('style', 'background:red;');
-                      $('#' + (startend_time[v.summary].end).replace(':','') + '_personal').attr('style', 'background:red;');
+                      $('#' + (startend_time[v.summary].start).replace(':','') + '_personal').text(v.summary).attr('style', 'background:#32C532;border-top:1px solid black;');
+                      $('#' + (startend_time[v.summary].end).replace(':','') + '_personal').attr('style', 'background:#32C532;border-bottom:1px solid black;');
 
-                      for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
+                      if (parseInt((startend_time[v.summary].start).replace(':','')) <= 1245 &&
+                          parseInt((startend_time[v.summary].end).replace(':','')) <= 600 &&
+                          parseInt((startend_time[v.summary].start).replace(':','')) >= 800) {
 
+                        //the time crosses over the AM-PM mark
+                        for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= 1245; i++) {
+                            var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
+                            //console.log('Time: ' + i + ', minutes: ' + i_minutes);
+
+                            if (Math.floor(i_minutes/15) == 1 || 2 || 3) {
+                              //console.log('true');
+                              $('#' + i + '_personal').attr('style', 'background:#32C532;;');
+                              //console.log('#' + i + '_veeva');
+                            }
+                        }
+
+                        for (var i = 100; i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
+                            var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
+                            //console.log('Time: ' + i + ', minutes: ' + i_minutes);
+
+                            if (Math.floor(i_minutes/15) == 1 || 2 || 3) {
+                              //console.log('true');
+                              $('#' + i + '_personal').attr('style', 'background:#32C532;');
+                              //console.log('#' + i + '_veeva');
+                            }
+                        }
+                      } else {
+                        //the time does not cross over the AM-PM mark
                         for (var i = parseInt((startend_time[v.summary].start).replace(':','')); i <= parseInt((startend_time[v.summary].end).replace(':','')); i++) {
-                          var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
-                          console.log('Time: ' + i + ', minutes: ' + i_minutes);
+                            var i_minutes = parseInt((startend_time[v.summary].start).split(':')[1]);
+                            //console.log('Time: ' + i + ', minutes: ' + i_minutes);
 
-                          if (/*i%15==0*/Math.floor(i_minutes/15) == 1 || 2 || 3) {
-                            console.log('true');
-                            $('#' + i + '_personal').attr('style', 'background:red;');
-                            console.log('#' + i + '_personal');
-                          }
+                            if (Math.floor(i_minutes/15) == 1 || 2 || 3) {
+                              //console.log('true');
+                              $('#' + i + '_personal').attr('style', 'background:#32C532;');
+                              //console.log('#' + i + '_veeva');
+                            }
                         }
                       }
-
                     }
 
                   });
@@ -625,8 +757,4 @@
         });
       });
     });
-
-    function book(t) {
-      alert(t);
-    }
 }());

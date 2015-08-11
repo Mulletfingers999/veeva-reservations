@@ -35,3 +35,7 @@ table {
 .cell:active {
   background-color: lightgray;
 }
+
+input[type=number]{
+  width: 50%;
+}
