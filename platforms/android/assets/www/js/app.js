@@ -237,20 +237,18 @@ var a_token;
 
           //room booking function
           window.book_room = function(t, tstring) {
-            if (("" + $('#' + t + '_veeva').attr('style')).indexOf("red") == -1) {
+            if (("" + $('#' + t + '_veeva').attr('style')).indexOf("red") == -1 && t != 600) {
 
               //clear the values
               $('#event_form_minutes').html("");
 
               function adjt(time) {
-                //TODO fix this
                 var t = time;
                 //console.log(Math.floor((t+15) / (Math.pow(10, 1)) % 10) + '' + Math.floor((t+15) / (Math.pow(10, 0)) % 10));
                 if (t == 1245) {
-                  alert(time);
                   t = 100;
-                } else if (t + 15 >= 600 && ((t + 15) + '').length == 3) {
-                  t = 600;
+                } else if (t + 15 == 600 && t + 15 >= 800 && ((t + 15) + '').length == 3) {
+                  t = 615;
                 } else if ((parseInt(Math.floor((t+15) / (Math.pow(10, 1)) % 10) + '' + Math.floor((t+15) / (Math.pow(10, 0)) % 10)) % 60) == 0) {
                   t = t + 15 + 40;
                 } else {
@@ -260,11 +258,42 @@ var a_token;
                 return t;
               }
 
+              function tparse(t) {
+                var parsed = "";
+
+                if (t % 60 == 0) {
+                  parsed = (t / 60) + 'h';
+                } else if (t < 60) {
+                  parsed = t + '';
+                } else {
+                  /*var splt = ((t / 60) + '').split('.');
+                  parsed = splt[0] + 'h' + ((splt[1] == '3') ? '30'  : splt[1]);*/
+                  var hrs = Math.floor( t / 60);
+                  var minutes = t % 60;
+                  parsed = hrs + 'h' + minutes; 
+                }
+
+                return parsed;
+              }
+
+              function inBounds(t) {
+                var inb;
+                if (('' + t).length == 4) {
+                  inb = true;
+                } else if (('' + t).length == 3 && t < 600) {
+                  inb = true;
+                } else if (('' + t).length == 3 && t >= 800) {
+                  inb = true;
+                } else {
+                  inb = false;
+                }
+                return inb;
+              }
+
               var j = 0;
-              for (var i = t; ('' + $('#' + i + '_veeva').attr('style')).indexOf('red') == -1; i=adjt(i)) {
+              for (var i = t; ('' + $('#' + i + '_veeva').attr('style')).indexOf('red') == -1 && inBounds(i); i=adjt(i)) {
                 j++;
-                //console.log(j*15);
-                $('#event_form_minutes').append('<option>' + j*15 + '</option>');
+                $('#event_form_minutes').append('<option>' + tparse(j*15) + '</option>');
               }
 
               $('#event_form_dialog').dialog({
@@ -480,6 +509,8 @@ var a_token;
 
                 $('#event_form_dialog').dialog('close');
               });
+            } else if (t == 600) {
+              alert('You can\'t book a room in that slot');
             } else {
               alert('A room is already booked in that slot!');
             }
@@ -509,6 +540,11 @@ var a_token;
                   //No errors, procide...
                   calendar = result.text;
                   console.log('Scanned text: ' + calendar);
+
+                  //set the header of the room events calendar to be the name of the calendar
+                  $.getJSON('https://www.googleapis.com/calendar/v3/calendars/' + calendar +  '?access_token=' + data.access_token, function (resource) {
+                    $('#rheader').text(resource.summary);
+                  });
 
                   //get the user's email address
                   xhr_email.onreadystatechange = function () {
