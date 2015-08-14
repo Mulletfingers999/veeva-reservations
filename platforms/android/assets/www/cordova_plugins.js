@@ -1,6 +1,14 @@
 cordova.define('cordova/plugin_list', function(require, exports, module) {
 module.exports = [
     {
+        "file": "plugins/cordova-plugin-inappbrowser/www/inappbrowser.js",
+        "id": "cordova-plugin-inappbrowser.inappbrowser",
+        "clobbers": [
+            "cordova.InAppBrowser.open",
+            "window.open"
+        ]
+    },
+    {
         "file": "plugins/cordova-plugin-whitelist/whitelist.js",
         "id": "cordova-plugin-whitelist.whitelist",
         "runs": true
@@ -39,26 +47,18 @@ module.exports = [
         "clobbers": [
             "cordova.plugins.barcodeScanner"
         ]
-    },
-    {
-        "file": "plugins/cordova-plugin-inappbrowser/www/inappbrowser.js",
-        "id": "cordova-plugin-inappbrowser.inappbrowser",
-        "clobbers": [
-            "cordova.InAppBrowser.open",
-            "window.open"
-        ]
     }
 ];
 module.exports.metadata = 
 // TOP OF METADATA
 {
+    "cordova-plugin-inappbrowser": "1.0.2-dev",
     "cordova-plugin-whitelist": "1.0.0",
-    "org.apache.cordova.device": "0.3.0",
     "org.apache.cordova.console": "0.2.13",
+    "org.apache.cordova.device": "0.3.0",
     "org.apache.cordova.dialogs": "0.3.0",
     "org.apache.cordova.statusbar": "0.1.10",
-    "phonegap-plugin-barcodescanner": "3.1.2",
-    "cordova-plugin-inappbrowser": "1.0.2-dev"
+    "phonegap-plugin-barcodescanner": "3.1.2"
 }
 // BOTTOM OF METADATA
 });

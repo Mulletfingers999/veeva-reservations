@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta http-equiv="Content-Security-Policy" content="default-src *; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval'">
     <link href="assets/ratchet/css/ratchet.css" rel="stylesheet">
     <link href="assets/css/styles.css" rel="stylesheet">
     <link rel="stylesheet" href="lib/jquery-ui.min.css">
@@ -10,7 +11,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 </head>
-<body>
+<body onmousedown="$('body').attr('style', 'position:fixed;')">
   <script id="home-tpl" type="text/template">
     <div id="login">
       <a id="logina">Sign In With Google!</a>
@@ -22,16 +23,50 @@
       <hr/>
     </div>
 
-    <table id="calendars" width="100%" height="80%">
+    <!--<table id="calendars" width="100%" height="80%">
       <tr>
         <td style="height: 100%" id="personal-calendar">
-          <!-- Soon to be i-Framed -->
+          <!-- Soon to be i-Framed
         </td>
         <td style="height: 100%" id="veeva-calendar">
-          <!-- Also soon to be i-Framed -->
+          <!-- Also soon to be i-Framed
         </td>
       </tr>
-    </table>
+    </table>-->
+
+    <!--Looking for the inner-table html generator? Check out http://jsfiddle.net/tukeqp2o/6/ or for clicks http://jsfiddle.net/tukeqp2o/8/ -->
+    <center>
+      <table id="calendars">
+        <tr><th>T:00</th><th id="pheader">Personal Events</th><th id="rheader">Conference Room</th></tr><tr><td>8:00</td><td id="800_personal" class="cell"></td><td id="800_veeva" class="cell" onclick="book_room(800, '8:00')"></td></tr><tr><td>8:15</td><td id="815_personal" class="cell"></td><td id="815_veeva" class="cell" onclick="book_room(815, '8:15')"></td></tr><tr><td>8:30</td><td id="830_personal" class="cell"></td><td id="830_veeva" class="cell" onclick="book_room(830, '8:30')"></td></tr><tr><td>8:45</td><td id="845_personal" class="cell"></td><td id="845_veeva" class="cell" onclick="book_room(845, '8:45')"></td></tr><tr><td>9:00</td><td id="900_personal" class="cell"></td><td id="900_veeva" class="cell" onclick="book_room(900, '9:00')"></td></tr><tr><td>9:15</td><td id="915_personal" class="cell"></td><td id="915_veeva" class="cell" onclick="book_room(915, '9:15')"></td></tr><tr><td>9:30</td><td id="930_personal" class="cell"></td><td id="930_veeva" class="cell" onclick="book_room(930, '9:30')"></td></tr><tr><td>9:45</td><td id="945_personal" class="cell"></td><td id="945_veeva" class="cell" onclick="book_room(945, '9:45')"></td></tr><tr><td>10:00</td><td id="1000_personal" class="cell"></td><td id="1000_veeva" class="cell" onclick="book_room(1000, '10:00')"></td></tr><tr><td>10:15</td><td id="1015_personal" class="cell"></td><td id="1015_veeva" class="cell" onclick="book_room(1015, '10:15')"></td></tr><tr><td>10:30</td><td id="1030_personal" class="cell"></td><td id="1030_veeva" class="cell" onclick="book_room(1030, '10:30')"></td></tr><tr><td>10:45</td><td id="1045_personal" class="cell"></td><td id="1045_veeva" class="cell" onclick="book_room(1045, '10:45')"></td></tr><tr><td>11:00</td><td id="1100_personal" class="cell"></td><td id="1100_veeva" class="cell" onclick="book_room(1100, '11:00')"></td></tr><tr><td>11:15</td><td id="1115_personal" class="cell"></td><td id="1115_veeva" class="cell" onclick="book_room(1115, '11:15')"></td></tr><tr><td>11:30</td><td id="1130_personal" class="cell"></td><td id="1130_veeva" class="cell" onclick="book_room(1130, '11:30')"></td></tr><tr><td>11:45</td><td id="1145_personal" class="cell"></td><td id="1145_veeva" class="cell" onclick="book_room(1145, '11:45')"></td></tr><tr><td>12:00</td><td id="1200_personal" class="cell"></td><td id="1200_veeva" class="cell" onclick="book_room(1200, '12:00')"></td></tr><tr><td>12:15</td><td id="1215_personal" class="cell"></td><td id="1215_veeva" class="cell" onclick="book_room(1215, '12:15')"></td></tr><tr><td>12:30</td><td id="1230_personal" class="cell"></td><td id="1230_veeva" class="cell" onclick="book_room(1230, '12:30')"></td></tr><tr><td>12:45</td><td id="1245_personal" class="cell"></td><td id="1245_veeva" class="cell" onclick="book_room(1245, '12:45')"></td></tr><tr><td>1:00</td><td id="100_personal" class="cell"></td><td id="100_veeva" class="cell" onclick="book_room(100, '1:00')"></td></tr><tr><td>1:15</td><td id="115_personal" class="cell"></td><td id="115_veeva" class="cell" onclick="book_room(115, '1:15')"></td></tr><tr><td>1:30</td><td id="130_personal" class="cell"></td><td id="130_veeva" class="cell" onclick="book_room(130, '1:30')"></td></tr><tr><td>1:45</td><td id="145_personal" class="cell"></td><td id="145_veeva" class="cell" onclick="book_room(145, '1:45')"></td></tr><tr><td>2:00</td><td id="200_personal" class="cell"></td><td id="200_veeva" class="cell" onclick="book_room(200, '2:00')"></td></tr><tr><td>2:15</td><td id="215_personal" class="cell"></td><td id="215_veeva" class="cell" onclick="book_room(215, '2:15')"></td></tr><tr><td>2:30</td><td id="230_personal" class="cell"></td><td id="230_veeva" class="cell" onclick="book_room(230, '2:30')"></td></tr><tr><td>2:45</td><td id="245_personal" class="cell"></td><td id="245_veeva" class="cell" onclick="book_room(245, '2:45')"></td></tr><tr><td>3:00</td><td id="300_personal" class="cell"></td><td id="300_veeva" class="cell" onclick="book_room(300, '3:00')"></td></tr><tr><td>3:15</td><td id="315_personal" class="cell"></td><td id="315_veeva" class="cell" onclick="book_room(315, '3:15')"></td></tr><tr><td>3:30</td><td id="330_personal" class="cell"></td><td id="330_veeva" class="cell" onclick="book_room(330, '3:30')"></td></tr><tr><td>3:45</td><td id="345_personal" class="cell"></td><td id="345_veeva" class="cell" onclick="book_room(345, '3:45')"></td></tr><tr><td>4:00</td><td id="400_personal" class="cell"></td><td id="400_veeva" class="cell" onclick="book_room(400, '4:00')"></td></tr><tr><td>4:15</td><td id="415_personal" class="cell"></td><td id="415_veeva" class="cell" onclick="book_room(415, '4:15')"></td></tr><tr><td>4:30</td><td id="430_personal" class="cell"></td><td id="430_veeva" class="cell" onclick="book_room(430, '4:30')"></td></tr><tr><td>4:45</td><td id="445_personal" class="cell"></td><td id="445_veeva" class="cell" onclick="book_room(445, '4:45')"></td></tr><tr><td>5:00</td><td id="500_personal" class="cell"></td><td id="500_veeva" class="cell" onclick="book_room(500, '5:00')"></td></tr><tr><td>5:15</td><td id="515_personal" class="cell"></td><td id="515_veeva" class="cell" onclick="book_room(515, '5:15')"></td></tr><tr><td>5:30</td><td id="530_personal" class="cell"></td><td id="530_veeva" class="cell" onclick="book_room(530, '5:30')"></td></tr><tr><td>5:45</td><td id="545_personal" class="cell"></td><td id="545_veeva" class="cell" onclick="book_room(545, '5:45')"></td></tr><tr><td>6:00</td><td id="600_personal" class="cell"></td><td id="600_veeva" class="cell" onclick="book_room(600, '6:00')"></td></tr>
+      </table>
+    </center>
+    <hr/>
+    <div id="event_form_dialog" title="New event" style="display:none;">
+      <form id="event_form" action="javascript:void(0);">
+        <span>Event name:</span>
+        <input id="event_form_name" type="text" placeholder="In prompt to: "/>
+        <br/>
+        <span>Event length [min]</span>
+        <!--<input id="event_form_minutes" type="number" value="30" min="5"/>-->
+        <select id="event_form_minutes">
+          <!--Values in here will be overwritten-->
+          <option>15</option>
+          <option>30</option>
+          <option>45</option>
+          <option>1h</option>
+          <option>1h15</option>
+          <option>1h30</option>
+          <option>1h45</option>
+          <option>2h</option>
+          <option>2h15</option>
+          <option>2h30</option>
+          <option>2h45</option>
+          <option>3h</option>
+        </select>
+        <br/>
+        <input type="submit" value="Create event">
+      </form>
+    </div>
   </script>
   <script id="employee-list-tpl" type="text/template">
     <!--<ul class="table-view">
@@ -53,8 +88,8 @@
 <script src="lib/jquery-ui.min.js"></script>
 <script src="lib/jquery.ui.timepicker.js"></script>
 <script src="lib/handlebars.js"></script>
+<script src="lib/async.js"></script>
 <script src="js/services/memory/EmployeeService.js"></script>
-<!--<script src="https://apis.google.com/js/client.js?onload=checkAuth"></script>-->
 <script src="js/app.js"></script>
 <script src="cordova.js"></script>
 </body>

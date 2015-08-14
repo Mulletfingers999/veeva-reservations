@@ -1,5 +1,7 @@
 body {
   margin-top: 15px;
+  position: initial !important;
+  -webkit-user-select: none;
 }
 
 #login {
@@ -18,6 +20,22 @@ a {
   cursor: pointer;
 }
 
-#calendar {
+/*#calendar {
   box-sizing: inital !important;
+}*/
+
+#calendars {
+  width: 90%;
+}
+
+table {
+  border: 1px solid black;
+}
+
+.cell:active {
+  background-color: lightgray;
+}
+
+input[type=number]{
+  width: 50%;
 }

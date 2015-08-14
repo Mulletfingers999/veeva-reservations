@@ -9,6 +9,10 @@
                 "parents": {
                     "/*": [
                         {
+                            "xml": "<feature name=\"InAppBrowser\"><param name=\"android-package\" value=\"org.apache.cordova.inappbrowser.InAppBrowser\" /></feature>",
+                            "count": 1
+                        },
+                        {
                             "xml": "<feature name=\"Whitelist\"><param name=\"android-package\" value=\"org.apache.cordova.whitelist.WhitelistPlugin\" /><param name=\"onload\" value=\"true\" /></feature>",
                             "count": 1
                         },
@@ -26,10 +30,6 @@
                         },
                         {
                             "xml": "<feature name=\"BarcodeScanner\"><param name=\"android-package\" value=\"com.phonegap.plugins.barcodescanner.BarcodeScanner\" /></feature>",
-                            "count": 1
-                        },
-                        {
-                            "xml": "<feature name=\"InAppBrowser\"><param name=\"android-package\" value=\"org.apache.cordova.inappbrowser.InAppBrowser\" /></feature>",
                             "count": 1
                         }
                     ]
@@ -552,26 +552,26 @@
         }
     },
     "installed_plugins": {
-        "cordova-plugin-whitelist": {
-            "PACKAGE_NAME": "com.mullet.veeva"
+        "cordova-plugin-inappbrowser": {
+            "PACKAGE_NAME": "com.mullet.veevareservations"
         },
-        "org.apache.cordova.device": {
-            "PACKAGE_NAME": "com.mullet.veeva"
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "com.mullet.veevareservations"
         },
         "org.apache.cordova.console": {
-            "PACKAGE_NAME": "com.mullet.veeva"
+            "PACKAGE_NAME": "com.mullet.veevareservations"
+        },
+        "org.apache.cordova.device": {
+            "PACKAGE_NAME": "com.mullet.veevareservations"
         },
         "org.apache.cordova.dialogs": {
-            "PACKAGE_NAME": "com.mullet.veeva"
+            "PACKAGE_NAME": "com.mullet.veevareservations"
         },
         "org.apache.cordova.statusbar": {
-            "PACKAGE_NAME": "com.mullet.veeva"
+            "PACKAGE_NAME": "com.mullet.veevareservations"
         },
         "phonegap-plugin-barcodescanner": {
-            "PACKAGE_NAME": "com.mullet.veeva"
-        },
-        "cordova-plugin-inappbrowser": {
-            "PACKAGE_NAME": "com.mullet.veeva"
+            "PACKAGE_NAME": "com.mullet.veevareservations"
         }
     },
     "dependent_plugins": {}

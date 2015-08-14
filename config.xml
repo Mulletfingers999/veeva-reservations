@@ -12,6 +12,7 @@
     <!-- plugin name="BarcodeScanner" value="com.phonegap.plugins.barcodescanner.BarcodeScanner"></plugin -->
     <access origin="*" />
     <allow-intent href="http://*/*" />
+    <allow-navigation href="http://*/*" />
     <allow-intent href="https://*/*" />
     <allow-intent href="tel:*" />
     <allow-intent href="sms:*" />
