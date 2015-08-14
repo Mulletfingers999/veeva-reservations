@@ -517,7 +517,7 @@ var a_token;
           var email = '';
 
           //change the sign in with google thing to a rescanner
-          $('#login a').text('Re-scan QR Code');
+          $('#login a').text('Re-scan Room Code');
           $('#login a').attr('id', 'rescan');
 
           //creating xhrs

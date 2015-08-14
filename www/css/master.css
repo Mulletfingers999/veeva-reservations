@@ -32,6 +32,10 @@ table {
   border: 1px solid black;
 }
 
+tr td:first-child {
+  text-align: right;
+}
+
 .cell:active {
   background-color: lightgray;
 }
