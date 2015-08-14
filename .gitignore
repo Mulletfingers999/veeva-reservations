@@ -7,13 +7,16 @@
 # files for the dex VM
 *.dex
 
-# Java class files
+# Java class, jar, and axis archive files
 *.class
+*.jar
+*.aar
 
 # generated files - android project subfolder
-Android/bin/
-Android/gen/
-Android/assets/
+platforms/android/bin/
+platforms/android/gen/
+platforms/android/assets/
+platforms/android/libs/
 
 # generated files
 bin/
@@ -52,4 +55,5 @@ IOS/www/
 #android keystore
 release-key.keystore
 
+#.gradle subdir
 platforms/android/.gradle/*
