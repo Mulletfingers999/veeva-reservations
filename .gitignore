@@ -12,11 +12,9 @@
 *.jar
 *.aar
 
-# generated files - android project subfolder
-platforms/android/bin/
-platforms/android/gen/
-platforms/android/assets/
-platforms/android/libs/
+# generated files - android and iOS project subfolder
+platforms/
+plugins/
 
 # generated files
 bin/
