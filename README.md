@@ -1,5 +1,5 @@
-# Veeva-Reservations
-Repository for the Veeva-Reservations app. Available on Android and Coming Soon to iOS!
+# BookMe Now
+Repository for the BookMe Now app. Available on Android and Coming Soon to iOS!
 
 # First time set-up
 The setup shouldn't be too hard, there's just a few things here and there to do. If you haven't already, download and install [Apache's Cordova CLI](http://cordova.apache.org/docs/en/5.0.0//guide_cli_index.md.html#The%20Command-Line%20Interface) (Veeva-Reservations is built with 5.1.1, but 5.x should work fine) and follow the instructions in the linked site, clone the repo, and follow the instructions for your OS.
@@ -11,3 +11,13 @@ After you've cloned the repo, open up a terminal in the repo's directory and run
 
 ## iOS
 Note that at the time of writing, I have not been able to test my app on iOS, however any developer is welcome to attempt to do so. First run `cordova platforms add ios`, and in theory running `cordova run ios` (after downloading Apple's SDKs or hooking your device to your Mac) should deploy the app to your device/start the emulator (add "--device" to deploy to a USB-attached iOS device).
+
+## Plug-ins
+This app requires the following plug-ins:
+* cordova-plugin-barcodescanner
+* cordova-plugin-console
+* cordova-plugin-device
+* cordova-plugin-dialogs
+* cordova-plugin-inappbrowser
+* cordova-plugin-statusbar
+* cordova-plugin-whitelist
