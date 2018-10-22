@@ -1,5 +1,5 @@
 # BookMe Now
-Repository for the BookMe Now app. Available on Android and Coming Soon to iOS!
+Repository for the BookMe Now app. Available on Google Play and Coming Soon to iTunes!
 
 # First time set-up
 The setup shouldn't be too hard, there's just a few things here and there to do. If you haven't already, download and install [Apache's Cordova CLI](http://cordova.apache.org/docs/en/5.0.0//guide_cli_index.md.html#The%20Command-Line%20Interface) (Veeva-Reservations is built with 5.1.1, but 5.x should work fine) and follow the instructions in the linked site, clone the repo, and follow the instructions for your OS.
